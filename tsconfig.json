@@ -47,6 +47,6 @@
     "verbatimModuleSyntax": true,
   },
 
-  "include": ["src"],
+  "include": ["src", "file-structure-starter.js"],
   "exclude": ["node_modules", "dist", "tests", "examples"],
 }
