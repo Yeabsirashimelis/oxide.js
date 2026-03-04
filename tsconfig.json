@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    /* ===============================
+       Basic Options
+    =============================== */
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022"],
+    "moduleResolution": "Bundler",
+    "rootDir": "src",
+    "outDir": "dist",
+
+    /* ===============================
+       Strict Type Checking
+    =============================== */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    /* ===============================
+       Interop & Node Support
+    =============================== */
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+
+    /* ===============================
+       Declaration Files (Library Mode)
+    =============================== */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+
+    /* ===============================
+       Performance
+    =============================== */
+    "skipLibCheck": true,
+
+    /* ===============================
+       Modern Framework Friendly
+    =============================== */
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+  },
+
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "tests", "examples"],
+}

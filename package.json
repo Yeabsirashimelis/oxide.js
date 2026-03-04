@@ -1,0 +1,24 @@
+{
+  "name": "oxide.js",
+  "version": "0.1.0",
+  "description": "A modern TypeScript-first backend framework",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "http",
+    "framework",
+    "node",
+    "typescript"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}
