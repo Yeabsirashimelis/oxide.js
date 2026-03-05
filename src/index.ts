@@ -1,17 +1,24 @@
 import { createApp } from "./core/app";
-import { Router } from "./router/router";
 
 const app = createApp();
 
-app.get("/", (req: any, res: any) => {
-  res.end("Hello from my framework! 🚀");
+app.get("/", (req, res, params) => {
+  res.end("Hello from my framework!");
 });
 
-app.get("/test", (req: any, res: any) => {
+app.get("/test", (req, res, params) => {
   res.end("This is a test route");
 });
 
-app.post("/submit", (req: any, res: any) => {
+app.get("/users/:id", (req, res, params) => {
+  res.end(`User ID: ${params.id}`);
+});
+
+app.get("/users/:id/posts/:postId", (req, res, params) => {
+  res.end(`User ID: ${params.id}, Post ID: ${params.postId}`);
+});
+
+app.post("/submit", (req, res, params) => {
   res.end("POST request received");
 });
 

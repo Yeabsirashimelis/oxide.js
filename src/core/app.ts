@@ -1,8 +1,6 @@
 import { Router } from "../router/router";
+import type { Handler } from "../router/router";
 import { Server } from "./server";
-import { IncomingMessage, ServerResponse } from "http";
-
-type Handler = (req: IncomingMessage, res: ServerResponse) => void;
 
 export class Application {
   private router: Router;
@@ -10,11 +8,11 @@ export class Application {
     this.router = new Router();
   }
 
-  get(path: string, handler: any) {
+  get(path: string, handler: Handler) {
     this.router.add("GET", path, handler);
   }
 
-  post(path: string, handler: any) {
+  post(path: string, handler: Handler) {
     this.router.add("POST", path, handler);
   }
 
