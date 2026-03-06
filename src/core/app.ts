@@ -1,11 +1,19 @@
 import { Router } from "../router/router";
 import type { Handler } from "../router/router";
+import type { Middleware } from "../middleware/types";
+import { runMiddlewares } from "../middleware/runner";
 import { Server } from "./server";
 
 export class Application {
   private router: Router;
+  private middlewares: Middleware[] = [];
+
   constructor() {
     this.router = new Router();
+  }
+
+  use(middleware: Middleware) {
+    this.middlewares.push(middleware);
   }
 
   get(path: string, handler: Handler) {
@@ -42,7 +50,9 @@ export class Application {
 
   listen(port: number, callback?: () => void) {
     const server = new Server((req, res) => {
-      this.router.handle(req, res);
+      runMiddlewares(this.middlewares, req, res, () => {
+        this.router.handle(req, res);
+      });
     });
 
     server.listen(port, callback);
