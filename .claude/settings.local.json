@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npx ts-node src/index.ts)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(curl:*)",
+      "Bash(node dist/index.js:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

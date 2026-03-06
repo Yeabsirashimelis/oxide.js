@@ -1,11 +1,44 @@
 import { IncomingMessage, ServerResponse } from "http";
 
-type Handler = (req: IncomingMessage, res: ServerResponse) => void;
+export type Params = Record<string, string>;
+
+export type Handler = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  params: Params,
+) => void;
 
 interface Route {
   method: string;
   path: string;
   handler: Handler;
+}
+
+function matchRoute(pattern: string, url: string): Params | null {
+  const urlPath = url.split("?")[0] ?? url;
+
+  const patternParts = pattern.split("/").filter(Boolean);
+  const urlParts = urlPath.split("/").filter(Boolean);
+
+  if (patternParts.length !== urlParts.length) {
+    return null;
+  }
+
+  const params: Params = {};
+
+  for (let i = 0; i < patternParts.length; i++) {
+    const patternPart = patternParts[i] as string;
+    const urlPart = urlParts[i] as string;
+
+    if (patternPart.startsWith(":")) {
+      const paramName = patternPart.slice(1);
+      params[paramName] = urlPart;
+    } else if (patternPart !== urlPart) {
+      return null;
+    }
+  }
+
+  return params;
 }
 
 export class Router {
@@ -16,15 +49,21 @@ export class Router {
   }
 
   handle(req: IncomingMessage, res: ServerResponse) {
-    const route = this.routes.find(
-      (r) => r.method === req.method && r.path === req.url,
-    );
+    const url = req.url || "/";
 
-    if (route) {
-      route.handler(req, res);
-    } else {
-      res.statusCode = 404;
-      res.end("Not Found");
+    for (const route of this.routes) {
+      if (route.method !== req.method) {
+        continue;
+      }
+
+      const params = matchRoute(route.path, url);
+      if (params !== null) {
+        route.handler(req, res, params);
+        return;
+      }
     }
+
+    res.statusCode = 404;
+    res.end("Not Found");
   }
 }
