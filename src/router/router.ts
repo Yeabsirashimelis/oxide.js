@@ -52,7 +52,7 @@ export class Router {
     const url = req.url || "/";
 
     for (const route of this.routes) {
-      if (route.method !== req.method) {
+      if (route.method !== "*" && route.method !== req.method) {
         continue;
       }
 

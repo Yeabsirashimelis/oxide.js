@@ -16,6 +16,30 @@ export class Application {
     this.router.add("POST", path, handler);
   }
 
+  put(path: string, handler: Handler) {
+    this.router.add("PUT", path, handler);
+  }
+
+  patch(path: string, handler: Handler) {
+    this.router.add("PATCH", path, handler);
+  }
+
+  delete(path: string, handler: Handler) {
+    this.router.add("DELETE", path, handler);
+  }
+
+  options(path: string, handler: Handler) {
+    this.router.add("OPTIONS", path, handler);
+  }
+
+  head(path: string, handler: Handler) {
+    this.router.add("HEAD", path, handler);
+  }
+
+  all(path: string, handler: Handler) {
+    this.router.add("*", path, handler);
+  }
+
   listen(port: number, callback?: () => void) {
     const server = new Server((req, res) => {
       this.router.handle(req, res);
