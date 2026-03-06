@@ -90,6 +90,21 @@ var Application = class {
   post(path, handler) {
     this.router.add("POST", path, handler);
   }
+  put(path, handler) {
+    this.router.add("PUT", path, handler);
+  }
+  patch(path, handler) {
+    this.router.add("PATCH", path, handler);
+  }
+  delete(path, handler) {
+    this.router.add("DELETE", path, handler);
+  }
+  options(path, handler) {
+    this.router.add("OPTIONS", path, handler);
+  }
+  head(path, handler) {
+    this.router.add("HEAD", path, handler);
+  }
   listen(port, callback) {
     const server = new Server((req, res) => {
       this.router.handle(req, res);
