@@ -36,6 +36,10 @@ export class Application {
     this.router.add("HEAD", path, handler);
   }
 
+  all(path: string, handler: Handler) {
+    this.router.add("*", path, handler);
+  }
+
   listen(port: number, callback?: () => void) {
     const server = new Server((req, res) => {
       this.router.handle(req, res);
