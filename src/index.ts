@@ -1,6 +1,7 @@
 import { createApp } from "./core/app";
 import { jsonParser } from "./body/json";
 import { cors } from "./middleware/cors";
+import { serveStatic } from "./middleware/static";
 
 const app = createApp();
 
@@ -23,6 +24,10 @@ app.use(cors({
 
 // JSON body parser middleware
 app.use(jsonParser());
+
+// Static file serving - serve files from "public" directory
+// Visit http://localhost:3000/index.html or http://localhost:3000/style.css
+app.use(serveStatic("public"));
 
 // ============================================
 // RESPONSE HELPERS DEMO
