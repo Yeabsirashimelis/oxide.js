@@ -2,30 +2,96 @@ import { createApp } from "./core/app";
 
 const app = createApp();
 
-// Logger middleware
+// ============================================
+// MIDDLEWARE DEMO
+// ============================================
+
+// Logger middleware - runs on every request
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
+// ============================================
+// RESPONSE HELPERS DEMO
+// ============================================
+
+// res.send() - plain text
 app.get("/", (req, res, params) => {
-  res.send("Hello from my framework!");
+  res.send("Welcome to Oxide.js API");
 });
 
-app.get("/test", (req, res, params) => {
-  res.json({ message: "This is a test route" });
+// res.json() - JSON response
+app.get("/api/health", (req, res, params) => {
+  res.json({ status: "ok", uptime: process.uptime() });
 });
 
-app.get("/users/:id", (req, res, params) => {
+// res.html() - HTML response
+app.get("/html", (req, res, params) => {
+  res.html("<h1>Hello from Oxide.js</h1><p>This is an HTML response</p>");
+});
+
+// res.status() - custom status code
+app.get("/api/error", (req, res, params) => {
+  res.status(500).json({ error: "Internal server error" });
+});
+
+// ============================================
+// DYNAMIC ROUTE PARAMETERS DEMO
+// ============================================
+
+// Single parameter
+app.get("/api/users/:id", (req, res, params) => {
   res.json({ userId: params.id });
 });
 
-app.get("/users/:id/posts/:postId", (req, res, params) => {
-  res.json({ userId: params.id, postId: params.postId });
+// Multiple parameters
+app.get("/api/users/:userId/posts/:postId", (req, res, params) => {
+  res.json({ userId: params.userId, postId: params.postId });
 });
 
-app.post("/submit", (req, res, params) => {
-  res.status(201).json({ success: true });
+// ============================================
+// HTTP METHODS DEMO
+// ============================================
+
+// GET - retrieve resource
+app.get("/api/items", (req, res, params) => {
+  res.json({ items: [{ id: 1, name: "Item 1" }, { id: 2, name: "Item 2" }] });
+});
+
+// POST - create resource
+app.post("/api/items", (req, res, params) => {
+  res.status(201).json({ message: "Item created", id: 3 });
+});
+
+// PUT - replace resource
+app.put("/api/items/:id", (req, res, params) => {
+  res.json({ message: "Item replaced", id: params.id });
+});
+
+// PATCH - update resource
+app.patch("/api/items/:id", (req, res, params) => {
+  res.json({ message: "Item updated", id: params.id });
+});
+
+// DELETE - remove resource
+app.delete("/api/items/:id", (req, res, params) => {
+  res.status(204).send("");
+});
+
+// OPTIONS - CORS preflight
+app.options("/api/items", (req, res, params) => {
+  res.status(204).send("");
+});
+
+// HEAD - headers only (same as GET but no body)
+app.head("/api/items", (req, res, params) => {
+  res.status(200).send("");
+});
+
+// ALL - matches any HTTP method
+app.all("/api/any", (req, res, params) => {
+  res.json({ method: req.method, message: "This route accepts any HTTP method" });
 });
 
 app.listen(3000, () => {
