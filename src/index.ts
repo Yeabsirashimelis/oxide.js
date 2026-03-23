@@ -55,6 +55,28 @@ app.get("/api/users/:userId/posts/:postId", (req, res, params) => {
 });
 
 // ============================================
+// QUERY PARSER DEMO
+// ============================================
+
+// Search with query params: /api/search?q=hello&limit=10
+app.get("/api/search", (req, res, params) => {
+  res.json({
+    query: req.query.q || "",
+    limit: req.query.limit || "10",
+    allParams: req.query,
+  });
+});
+
+// Filter items: /api/products?category=electronics&sort=price
+app.get("/api/products", (req, res, params) => {
+  res.json({
+    category: req.query.category || "all",
+    sort: req.query.sort || "name",
+    filters: req.query,
+  });
+});
+
+// ============================================
 // BODY PARSING DEMO
 // ============================================
 
