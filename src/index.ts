@@ -254,6 +254,25 @@ v2.get("/users", (ctx: Context) => {
 });
 
 // ============================================
+// REQUEST INFO DEMO
+// ============================================
+
+// ctx.ip - get client IP address
+// ctx.hostname - get request hostname
+// ctx.protocol - get protocol (http/https)
+// ctx.secure - check if HTTPS
+app.get("/api/request-info", (ctx: Context) => {
+  ctx.json({
+    ip: ctx.ip,
+    hostname: ctx.hostname,
+    protocol: ctx.protocol,
+    secure: ctx.secure,
+    method: ctx.method,
+    url: ctx.url,
+  });
+});
+
+// ============================================
 // HEADER HELPERS DEMO
 // ============================================
 

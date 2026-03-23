@@ -41,6 +41,42 @@ export class Context {
     return this.req.headers;
   }
 
+  get ip(): string | undefined {
+    // Check X-Forwarded-For header first (for proxied requests)
+    const forwarded = this.req.headers["x-forwarded-for"];
+    if (forwarded) {
+      const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+      return ips?.split(",")[0]?.trim();
+    }
+    // Fall back to socket remote address
+    return this.req.socket?.remoteAddress;
+  }
+
+  get hostname(): string | undefined {
+    // Get host header and strip port if present
+    const host = this.req.headers["host"];
+    if (!host) return undefined;
+    // Handle IPv6 addresses in brackets
+    const bracketIndex = host.indexOf("]");
+    if (bracketIndex !== -1) {
+      return host.substring(0, bracketIndex + 1);
+    }
+    // Strip port from hostname
+    return host.split(":")[0];
+  }
+
+  get protocol(): string {
+    const proto = this.req.headers["x-forwarded-proto"];
+    if (proto) {
+      return Array.isArray(proto) ? proto[0] as string : proto;
+    }
+    return "http";
+  }
+
+  get secure(): boolean {
+    return this.protocol === "https";
+  }
+
   // Response helpers
   status(code: number): this {
     this.res.status(code);
