@@ -1,5 +1,6 @@
 import { createApp } from "./core/app";
 import { jsonParser } from "./body/json";
+import { urlencodedParser } from "./body/urlencoded";
 import { cors } from "./middleware/cors";
 import { serveStatic } from "./middleware/static";
 import { cookieParser } from "./middleware/cookie";
@@ -25,6 +26,9 @@ app.use(cors({
 
 // JSON body parser middleware
 app.use(jsonParser());
+
+// URL-encoded body parser middleware (for HTML forms)
+app.use(urlencodedParser());
 
 // Cookie parser middleware
 app.use(cookieParser());
@@ -108,6 +112,17 @@ app.post("/api/users", (ctx) => {
   ctx.status(201).json({
     message: "User created",
     user: { id: Date.now(), name: body.name, email: body.email },
+  });
+});
+
+// POST with URL-encoded form data (HTML form submission)
+app.post("/api/form", (ctx) => {
+  const body = ctx.body as { name?: string; email?: string; message?: string };
+  ctx.json({
+    received: "form data",
+    name: body.name,
+    email: body.email,
+    message: body.message,
   });
 });
 
