@@ -71,6 +71,50 @@ export class Context {
     this.res.download(filePath, filename);
   }
 
+  // Header helpers
+  set(name: string, value: string | number): this {
+    this.res.set(name, value);
+    return this;
+  }
+
+  append(name: string, value: string | number): this {
+    this.res.append(name, value);
+    return this;
+  }
+
+  type(contentType: string): this {
+    this.res.type(contentType);
+    return this;
+  }
+
+  get(name: string): string | undefined {
+    const value = this.req.headers[name.toLowerCase()];
+    return Array.isArray(value) ? value[0] : value;
+  }
+
+  is(type: string): boolean {
+    const contentType = this.req.headers["content-type"] || "";
+    const normalizedType = type.toLowerCase();
+
+    if (normalizedType === "json") {
+      return contentType.includes("application/json");
+    }
+    if (normalizedType === "html") {
+      return contentType.includes("text/html");
+    }
+    if (normalizedType === "text") {
+      return contentType.includes("text/plain");
+    }
+    if (normalizedType === "multipart") {
+      return contentType.includes("multipart/");
+    }
+    if (normalizedType === "urlencoded") {
+      return contentType.includes("application/x-www-form-urlencoded");
+    }
+
+    return contentType.includes(normalizedType);
+  }
+
   // Cookie helpers
   get cookies(): Cookies {
     return (this.req as unknown as OxideRequestWithCookies).cookies || {};

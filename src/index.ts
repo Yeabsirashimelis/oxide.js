@@ -254,6 +254,48 @@ v2.get("/users", (ctx: Context) => {
 });
 
 // ============================================
+// HEADER HELPERS DEMO
+// ============================================
+
+// ctx.set() - set response header
+app.get("/api/headers/set", (ctx: Context) => {
+  ctx.set("X-Custom-Header", "my-value");
+  ctx.set("X-Request-Id", Date.now());
+  ctx.json({ message: "Custom headers set!" });
+});
+
+// ctx.append() - append to response header
+app.get("/api/headers/append", (ctx: Context) => {
+  ctx.append("X-Multi", "value1");
+  ctx.append("X-Multi", "value2");
+  ctx.json({ message: "Headers appended!" });
+});
+
+// ctx.type() - set content-type shorthand
+app.get("/api/headers/type", (ctx: Context) => {
+  ctx.type("json").send('{"message": "Content-Type set via type()"}');
+});
+
+// ctx.get() - get request header
+app.get("/api/headers/get", (ctx: Context) => {
+  ctx.json({
+    userAgent: ctx.get("User-Agent"),
+    accept: ctx.get("Accept"),
+    custom: ctx.get("X-Custom"),
+  });
+});
+
+// ctx.is() - check request content-type
+app.post("/api/headers/check", (ctx: Context) => {
+  ctx.json({
+    isJson: ctx.is("json"),
+    isHtml: ctx.is("html"),
+    isMultipart: ctx.is("multipart"),
+    isUrlencoded: ctx.is("urlencoded"),
+  });
+});
+
+// ============================================
 // REDIRECT DEMO
 // ============================================
 

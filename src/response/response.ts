@@ -2,6 +2,20 @@ import type { ServerResponse } from "http";
 import * as fs from "fs";
 import * as path from "path";
 
+const CONTENT_TYPE_MAP: Record<string, string> = {
+  json: "application/json",
+  html: "text/html",
+  text: "text/plain",
+  xml: "application/xml",
+  css: "text/css",
+  js: "application/javascript",
+  png: "image/png",
+  jpg: "image/jpeg",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+  pdf: "application/pdf",
+};
+
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html",
   ".css": "text/css",
@@ -37,6 +51,9 @@ export interface OxideResponse extends ServerResponse {
   redirect(url: string, statusCode?: number): void;
   sendFile(filePath: string, options?: SendFileOptions): void;
   download(filePath: string, filename?: string): void;
+  set(name: string, value: string | number): OxideResponse;
+  append(name: string, value: string | number): OxideResponse;
+  type(contentType: string): OxideResponse;
 }
 
 export function enhanceResponse(res: ServerResponse): OxideResponse {
@@ -112,6 +129,30 @@ export function enhanceResponse(res: ServerResponse): OxideResponse {
       `attachment; filename="${downloadName}"`
     );
     this.sendFile(filePath);
+  };
+
+  oxideRes.set = function (name: string, value: string | number): OxideResponse {
+    this.setHeader(name, String(value));
+    return this;
+  };
+
+  oxideRes.append = function (name: string, value: string | number): OxideResponse {
+    const existing = this.getHeader(name);
+    if (existing) {
+      const newValue = Array.isArray(existing)
+        ? [...existing, String(value)]
+        : [String(existing), String(value)];
+      this.setHeader(name, newValue);
+    } else {
+      this.setHeader(name, String(value));
+    }
+    return this;
+  };
+
+  oxideRes.type = function (contentType: string): OxideResponse {
+    const resolved = CONTENT_TYPE_MAP[contentType] || contentType;
+    this.setHeader("Content-Type", resolved);
+    return this;
   };
 
   return oxideRes;
