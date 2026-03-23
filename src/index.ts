@@ -2,6 +2,7 @@ import { createApp } from "./core/app";
 import { jsonParser } from "./body/json";
 import { cors } from "./middleware/cors";
 import { serveStatic } from "./middleware/static";
+import { cookieParser } from "./middleware/cookie";
 
 const app = createApp();
 
@@ -24,6 +25,9 @@ app.use(cors({
 
 // JSON body parser middleware
 app.use(jsonParser());
+
+// Cookie parser middleware
+app.use(cookieParser());
 
 // Static file serving - serve files from "public" directory
 // Visit http://localhost:3000/index.html or http://localhost:3000/style.css
@@ -145,6 +149,31 @@ app.head("/api/items", (ctx) => {
 // ALL - matches any HTTP method
 app.all("/api/any", (ctx) => {
   ctx.json({ method: ctx.method, message: "This route accepts any HTTP method" });
+});
+
+// ============================================
+// COOKIE DEMO
+// ============================================
+
+// Set a cookie
+app.get("/api/cookie/set", (ctx) => {
+  ctx.setCookie("session", "abc123", {
+    httpOnly: true,
+    maxAge: 3600,
+    path: "/",
+  });
+  ctx.json({ message: "Cookie set!" });
+});
+
+// Read cookies
+app.get("/api/cookie/get", (ctx) => {
+  ctx.json({ cookies: ctx.cookies });
+});
+
+// Clear a cookie
+app.get("/api/cookie/clear", (ctx) => {
+  ctx.clearCookie("session", { path: "/" });
+  ctx.json({ message: "Cookie cleared!" });
 });
 
 // ============================================
