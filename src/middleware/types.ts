@@ -6,4 +6,4 @@ export type Middleware = (
   req: IncomingMessage,
   res: ServerResponse,
   next: Next,
-) => void;
+) => void | Promise<void>;

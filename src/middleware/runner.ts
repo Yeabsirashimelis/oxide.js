@@ -12,7 +12,13 @@ export function runMiddlewares(
   const next = () => {
     if (index < middlewares.length) {
       const middleware = middlewares[index++] as Middleware;
-      middleware(req, res, next);
+      const result = middleware(req, res, next);
+      if (result instanceof Promise) {
+        result.catch((err) => {
+          res.statusCode = 500;
+          res.end(`Internal Server Error: ${err}`);
+        });
+      }
     } else {
       done();
     }

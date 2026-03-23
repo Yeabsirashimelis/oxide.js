@@ -1,4 +1,5 @@
 import { createApp } from "./core/app";
+import { jsonParser } from "./body/json";
 
 const app = createApp();
 
@@ -11,6 +12,9 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
+
+// JSON body parser middleware
+app.use(jsonParser());
 
 // ============================================
 // RESPONSE HELPERS DEMO
@@ -51,6 +55,24 @@ app.get("/api/users/:userId/posts/:postId", (req, res, params) => {
 });
 
 // ============================================
+// BODY PARSING DEMO
+// ============================================
+
+// POST with JSON body
+app.post("/api/echo", (req, res, params) => {
+  res.json({ received: req.body });
+});
+
+// POST user creation
+app.post("/api/users", (req, res, params) => {
+  const body = req.body as { name?: string; email?: string };
+  res.status(201).json({
+    message: "User created",
+    user: { id: Date.now(), name: body.name, email: body.email },
+  });
+});
+
+// ============================================
 // HTTP METHODS DEMO
 // ============================================
 
@@ -59,9 +81,10 @@ app.get("/api/items", (req, res, params) => {
   res.json({ items: [{ id: 1, name: "Item 1" }, { id: 2, name: "Item 2" }] });
 });
 
-// POST - create resource
+// POST - create resource (with body parsing)
 app.post("/api/items", (req, res, params) => {
-  res.status(201).json({ message: "Item created", id: 3 });
+  const body = req.body as { name?: string };
+  res.status(201).json({ message: "Item created", name: body.name || "unnamed" });
 });
 
 // PUT - replace resource

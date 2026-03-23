@@ -1,11 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { enhanceResponse } from "../response/response";
 import type { OxideResponse } from "../response/response";
+import type { OxideRequest } from "../request/request";
 
 export type Params = Record<string, string>;
 
 export type Handler = (
-  req: IncomingMessage,
+  req: OxideRequest,
   res: OxideResponse,
   params: Params,
 ) => void;
@@ -61,7 +62,7 @@ export class Router {
 
       const params = matchRoute(route.path, url);
       if (params !== null) {
-        route.handler(req, oxideRes, params);
+        route.handler(req as OxideRequest, oxideRes, params);
         return;
       }
     }
