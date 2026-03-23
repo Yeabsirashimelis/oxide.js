@@ -1,19 +1,13 @@
-import type { ServerResponse } from "http";
-import type { OxideRequest } from "../request/request";
-import type { OxideResponse } from "../response/response";
+import type { Context } from "../core/context";
 
-export type ErrorHandler = (
-  err: Error,
-  req: OxideRequest,
-  res: OxideResponse,
-) => void;
+export type ErrorHandler = (err: Error, ctx: Context) => void;
 
-export const defaultErrorHandler: ErrorHandler = (err, req, res) => {
+export const defaultErrorHandler: ErrorHandler = (err, ctx) => {
   console.error(`[Error] ${err.message}`);
   console.error(err.stack);
 
-  if (!res.headersSent) {
-    res.status(500).json({
+  if (!ctx.res.headersSent) {
+    ctx.status(500).json({
       error: err.message || "Internal Server Error",
     });
   }

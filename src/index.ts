@@ -20,24 +20,24 @@ app.use(jsonParser());
 // RESPONSE HELPERS DEMO
 // ============================================
 
-// res.send() - plain text
-app.get("/", (req, res, params) => {
-  res.send("Welcome to Oxide.js API");
+// ctx.send() - plain text
+app.get("/", (ctx) => {
+  ctx.send("Welcome to Oxide.js API");
 });
 
-// res.json() - JSON response
-app.get("/api/health", (req, res, params) => {
-  res.json({ status: "ok", uptime: process.uptime() });
+// ctx.json() - JSON response
+app.get("/api/health", (ctx) => {
+  ctx.json({ status: "ok", uptime: process.uptime() });
 });
 
-// res.html() - HTML response
-app.get("/html", (req, res, params) => {
-  res.html("<h1>Hello from Oxide.js</h1><p>This is an HTML response</p>");
+// ctx.html() - HTML response
+app.get("/html", (ctx) => {
+  ctx.html("<h1>Hello from Oxide.js</h1><p>This is an HTML response</p>");
 });
 
-// res.status() - custom status code
-app.get("/api/error", (req, res, params) => {
-  res.status(500).json({ error: "Internal server error" });
+// ctx.status() - custom status code
+app.get("/api/error", (ctx) => {
+  ctx.status(500).json({ error: "Internal server error" });
 });
 
 // ============================================
@@ -45,13 +45,13 @@ app.get("/api/error", (req, res, params) => {
 // ============================================
 
 // Single parameter
-app.get("/api/users/:id", (req, res, params) => {
-  res.json({ userId: params.id });
+app.get("/api/users/:id", (ctx) => {
+  ctx.json({ userId: ctx.params.id });
 });
 
 // Multiple parameters
-app.get("/api/users/:userId/posts/:postId", (req, res, params) => {
-  res.json({ userId: params.userId, postId: params.postId });
+app.get("/api/users/:userId/posts/:postId", (ctx) => {
+  ctx.json({ userId: ctx.params.userId, postId: ctx.params.postId });
 });
 
 // ============================================
@@ -59,20 +59,20 @@ app.get("/api/users/:userId/posts/:postId", (req, res, params) => {
 // ============================================
 
 // Search with query params: /api/search?q=hello&limit=10
-app.get("/api/search", (req, res, params) => {
-  res.json({
-    query: req.query.q || "",
-    limit: req.query.limit || "10",
-    allParams: req.query,
+app.get("/api/search", (ctx) => {
+  ctx.json({
+    query: ctx.query.q || "",
+    limit: ctx.query.limit || "10",
+    allParams: ctx.query,
   });
 });
 
 // Filter items: /api/products?category=electronics&sort=price
-app.get("/api/products", (req, res, params) => {
-  res.json({
-    category: req.query.category || "all",
-    sort: req.query.sort || "name",
-    filters: req.query,
+app.get("/api/products", (ctx) => {
+  ctx.json({
+    category: ctx.query.category || "all",
+    sort: ctx.query.sort || "name",
+    filters: ctx.query,
   });
 });
 
@@ -81,14 +81,14 @@ app.get("/api/products", (req, res, params) => {
 // ============================================
 
 // POST with JSON body
-app.post("/api/echo", (req, res, params) => {
-  res.json({ received: req.body });
+app.post("/api/echo", (ctx) => {
+  ctx.json({ received: ctx.body });
 });
 
 // POST user creation
-app.post("/api/users", (req, res, params) => {
-  const body = req.body as { name?: string; email?: string };
-  res.status(201).json({
+app.post("/api/users", (ctx) => {
+  const body = ctx.body as { name?: string; email?: string };
+  ctx.status(201).json({
     message: "User created",
     user: { id: Date.now(), name: body.name, email: body.email },
   });
@@ -99,44 +99,44 @@ app.post("/api/users", (req, res, params) => {
 // ============================================
 
 // GET - retrieve resource
-app.get("/api/items", (req, res, params) => {
-  res.json({ items: [{ id: 1, name: "Item 1" }, { id: 2, name: "Item 2" }] });
+app.get("/api/items", (ctx) => {
+  ctx.json({ items: [{ id: 1, name: "Item 1" }, { id: 2, name: "Item 2" }] });
 });
 
 // POST - create resource (with body parsing)
-app.post("/api/items", (req, res, params) => {
-  const body = req.body as { name?: string };
-  res.status(201).json({ message: "Item created", name: body.name || "unnamed" });
+app.post("/api/items", (ctx) => {
+  const body = ctx.body as { name?: string };
+  ctx.status(201).json({ message: "Item created", name: body.name || "unnamed" });
 });
 
 // PUT - replace resource
-app.put("/api/items/:id", (req, res, params) => {
-  res.json({ message: "Item replaced", id: params.id });
+app.put("/api/items/:id", (ctx) => {
+  ctx.json({ message: "Item replaced", id: ctx.params.id });
 });
 
 // PATCH - update resource
-app.patch("/api/items/:id", (req, res, params) => {
-  res.json({ message: "Item updated", id: params.id });
+app.patch("/api/items/:id", (ctx) => {
+  ctx.json({ message: "Item updated", id: ctx.params.id });
 });
 
 // DELETE - remove resource
-app.delete("/api/items/:id", (req, res, params) => {
-  res.status(204).send("");
+app.delete("/api/items/:id", (ctx) => {
+  ctx.status(204).send("");
 });
 
 // OPTIONS - CORS preflight
-app.options("/api/items", (req, res, params) => {
-  res.status(204).send("");
+app.options("/api/items", (ctx) => {
+  ctx.status(204).send("");
 });
 
 // HEAD - headers only (same as GET but no body)
-app.head("/api/items", (req, res, params) => {
-  res.status(200).send("");
+app.head("/api/items", (ctx) => {
+  ctx.status(200).send("");
 });
 
 // ALL - matches any HTTP method
-app.all("/api/any", (req, res, params) => {
-  res.json({ method: req.method, message: "This route accepts any HTTP method" });
+app.all("/api/any", (ctx) => {
+  ctx.json({ method: ctx.method, message: "This route accepts any HTTP method" });
 });
 
 // ============================================
@@ -144,21 +144,21 @@ app.all("/api/any", (req, res, params) => {
 // ============================================
 
 // Sync error - throws immediately
-app.get("/api/crash", (req, res, params) => {
+app.get("/api/crash", (ctx) => {
   throw new Error("Something went wrong!");
 });
 
 // Async error - throws in promise
-app.get("/api/async-crash", async (req, res, params) => {
+app.get("/api/async-crash", async (ctx) => {
   await new Promise((resolve) => setTimeout(resolve, 100));
   throw new Error("Async error occurred!");
 });
 
 // Custom error handler (optional - uncomment to use)
-// app.onError((err, req, res) => {
-//   res.status(500).json({
+// app.onError((err, ctx) => {
+//   ctx.status(500).json({
 //     error: err.message,
-//     path: req.url,
+//     path: ctx.url,
 //     timestamp: new Date().toISOString(),
 //   });
 // });
