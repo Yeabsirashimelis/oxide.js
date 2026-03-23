@@ -9,23 +9,23 @@ app.use((req, res, next) => {
 });
 
 app.get("/", (req, res, params) => {
-  res.end("Hello from my framework!");
+  res.send("Hello from my framework!");
 });
 
 app.get("/test", (req, res, params) => {
-  res.end("This is a test route");
+  res.json({ message: "This is a test route" });
 });
 
 app.get("/users/:id", (req, res, params) => {
-  res.end(`User ID: ${params.id}`);
+  res.json({ userId: params.id });
 });
 
 app.get("/users/:id/posts/:postId", (req, res, params) => {
-  res.end(`User ID: ${params.id}, Post ID: ${params.postId}`);
+  res.json({ userId: params.id, postId: params.postId });
 });
 
 app.post("/submit", (req, res, params) => {
-  res.end("POST request received");
+  res.status(201).json({ success: true });
 });
 
 app.listen(3000, () => {

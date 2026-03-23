@@ -1,10 +1,12 @@
-import { IncomingMessage, ServerResponse } from "http";
+import type { IncomingMessage, ServerResponse } from "http";
+import { enhanceResponse } from "../response/response";
+import type { OxideResponse } from "../response/response";
 
 export type Params = Record<string, string>;
 
 export type Handler = (
   req: IncomingMessage,
-  res: ServerResponse,
+  res: OxideResponse,
   params: Params,
 ) => void;
 
@@ -50,6 +52,7 @@ export class Router {
 
   handle(req: IncomingMessage, res: ServerResponse) {
     const url = req.url || "/";
+    const oxideRes = enhanceResponse(res);
 
     for (const route of this.routes) {
       if (route.method !== "*" && route.method !== req.method) {
@@ -58,12 +61,11 @@ export class Router {
 
       const params = matchRoute(route.path, url);
       if (params !== null) {
-        route.handler(req, res, params);
+        route.handler(req, oxideRes, params);
         return;
       }
     }
 
-    res.statusCode = 404;
-    res.end("Not Found");
+    oxideRes.status(404).send("Not Found");
   }
 }
