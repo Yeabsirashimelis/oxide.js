@@ -1,8 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { enhanceResponse } from "../response/response";
-import type { OxideResponse } from "../response/response";
 import { enhanceRequest } from "../request/request";
-import type { OxideRequest } from "../request/request";
+import { Context } from "../core/context";
 import {
   defaultErrorHandler,
   type ErrorHandler,
@@ -10,11 +9,7 @@ import {
 
 export type Params = Record<string, string>;
 
-export type Handler = (
-  req: OxideRequest,
-  res: OxideResponse,
-  params: Params,
-) => void | Promise<void>;
+export type Handler = (ctx: Context) => void | Promise<void>;
 
 interface Route {
   method: string;
@@ -73,15 +68,16 @@ export class Router {
 
       const params = matchRoute(route.path, url);
       if (params !== null) {
+        const ctx = new Context(oxideReq, oxideRes, params);
         try {
-          const result = route.handler(oxideReq, oxideRes, params);
+          const result = route.handler(ctx);
           if (result instanceof Promise) {
             result.catch((err: Error) => {
-              this.errorHandler(err, oxideReq, oxideRes);
+              this.errorHandler(err, ctx);
             });
           }
         } catch (err) {
-          this.errorHandler(err as Error, oxideReq, oxideRes);
+          this.errorHandler(err as Error, ctx);
         }
         return;
       }

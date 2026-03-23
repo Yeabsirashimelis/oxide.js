@@ -30,7 +30,10 @@ function parseQuery(url: string): Query {
 
 export function enhanceRequest(req: IncomingMessage): OxideRequest {
   const oxideReq = req as OxideRequest;
-  oxideReq.body = {};
+  // Preserve body if already set by middleware
+  if (oxideReq.body === undefined) {
+    oxideReq.body = {};
+  }
   oxideReq.query = parseQuery(req.url || "");
   return oxideReq;
 }
