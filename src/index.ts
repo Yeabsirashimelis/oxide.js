@@ -1,5 +1,6 @@
 import { createApp } from "./core/app";
 import { jsonParser } from "./body/json";
+import { cors } from "./middleware/cors";
 
 const app = createApp();
 
@@ -12,6 +13,13 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
+
+// CORS middleware - enable cross-origin requests
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 // JSON body parser middleware
 app.use(jsonParser());
@@ -121,11 +129,6 @@ app.patch("/api/items/:id", (ctx) => {
 
 // DELETE - remove resource
 app.delete("/api/items/:id", (ctx) => {
-  ctx.status(204).send("");
-});
-
-// OPTIONS - CORS preflight
-app.options("/api/items", (ctx) => {
   ctx.status(204).send("");
 });
 
