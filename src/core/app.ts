@@ -1,6 +1,7 @@
 import { Router } from "../router/router";
 import type { Handler } from "../router/router";
 import type { Middleware } from "../middleware/types";
+import type { ErrorHandler } from "../middleware/error-handler";
 import { runMiddlewares } from "../middleware/runner";
 import { Server } from "./server";
 
@@ -46,6 +47,10 @@ export class Application {
 
   all(path: string, handler: Handler) {
     this.router.add("*", path, handler);
+  }
+
+  onError(handler: ErrorHandler) {
+    this.router.setErrorHandler(handler);
   }
 
   listen(port: number, callback?: () => void) {
