@@ -1,6 +1,6 @@
 import type { IncomingMessage } from "http";
 import type { OxideRequest, Query } from "../request/request";
-import type { OxideResponse } from "../response/response";
+import type { OxideResponse, SendFileOptions } from "../response/response";
 import type { Params } from "../router/router";
 import type {
   Cookies,
@@ -57,6 +57,18 @@ export class Context {
 
   html(body: string): void {
     this.res.html(body);
+  }
+
+  redirect(url: string, statusCode?: number): void {
+    this.res.redirect(url, statusCode);
+  }
+
+  sendFile(filePath: string, options?: SendFileOptions): void {
+    this.res.sendFile(filePath, options);
+  }
+
+  download(filePath: string, filename?: string): void {
+    this.res.download(filePath, filename);
   }
 
   // Cookie helpers

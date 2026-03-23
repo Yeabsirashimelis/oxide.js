@@ -6,14 +6,18 @@ import {
   defaultErrorHandler,
   type ErrorHandler,
 } from "../middleware/error-handler";
+import type { Middleware } from "../middleware/types";
 
 export type Params = Record<string, string>;
 
 export type Handler = (ctx: Context) => void | Promise<void>;
 
+export type RouteMiddleware = Middleware | Handler;
+
 interface Route {
   method: string;
   path: string;
+  middlewares: Middleware[];
   handler: Handler;
 }
 
@@ -60,33 +64,33 @@ export class RouteGroup {
     return `${this.prefix}${path}`;
   }
 
-  get(path: string, handler: Handler) {
-    this.router.add("GET", this.fullPath(path), handler);
+  get(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("GET", this.fullPath(path), ...handlers);
     return this;
   }
 
-  post(path: string, handler: Handler) {
-    this.router.add("POST", this.fullPath(path), handler);
+  post(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("POST", this.fullPath(path), ...handlers);
     return this;
   }
 
-  put(path: string, handler: Handler) {
-    this.router.add("PUT", this.fullPath(path), handler);
+  put(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("PUT", this.fullPath(path), ...handlers);
     return this;
   }
 
-  patch(path: string, handler: Handler) {
-    this.router.add("PATCH", this.fullPath(path), handler);
+  patch(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("PATCH", this.fullPath(path), ...handlers);
     return this;
   }
 
-  delete(path: string, handler: Handler) {
-    this.router.add("DELETE", this.fullPath(path), handler);
+  delete(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("DELETE", this.fullPath(path), ...handlers);
     return this;
   }
 
-  all(path: string, handler: Handler) {
-    this.router.add("*", this.fullPath(path), handler);
+  all(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("*", this.fullPath(path), ...handlers);
     return this;
   }
 }
@@ -95,8 +99,16 @@ export class Router {
   private routes: Route[] = [];
   private errorHandler: ErrorHandler = defaultErrorHandler;
 
-  add(method: string, path: string, handler: Handler) {
-    this.routes.push({ method, path, handler });
+  add(method: string, path: string, ...handlers: RouteMiddleware[]) {
+    if (handlers.length === 0) {
+      throw new Error("At least one handler is required");
+    }
+
+    // Last handler is the route handler, rest are middleware
+    const handler = handlers[handlers.length - 1] as Handler;
+    const middlewares = handlers.slice(0, -1) as Middleware[];
+
+    this.routes.push({ method, path, middlewares, handler });
   }
 
   group(prefix: string): RouteGroup {
@@ -120,20 +132,55 @@ export class Router {
       const params = matchRoute(route.path, url);
       if (params !== null) {
         const ctx = new Context(oxideReq, oxideRes, params);
-        try {
-          const result = route.handler(ctx);
-          if (result instanceof Promise) {
-            result.catch((err: Error) => {
-              this.errorHandler(err, ctx);
-            });
+
+        // Run route-level middleware then handler
+        this.runRouteMiddlewares(route.middlewares, req, res, ctx, () => {
+          try {
+            const result = route.handler(ctx);
+            if (result instanceof Promise) {
+              result.catch((err: Error) => {
+                this.errorHandler(err, ctx);
+              });
+            }
+          } catch (err) {
+            this.errorHandler(err as Error, ctx);
           }
-        } catch (err) {
-          this.errorHandler(err as Error, ctx);
-        }
+        });
         return;
       }
     }
 
     oxideRes.status(404).send("Not Found");
+  }
+
+  private runRouteMiddlewares(
+    middlewares: Middleware[],
+    req: IncomingMessage,
+    res: ServerResponse,
+    ctx: Context,
+    done: () => void
+  ) {
+    let index = 0;
+
+    const next = () => {
+      if (index >= middlewares.length) {
+        done();
+        return;
+      }
+
+      const middleware = middlewares[index++] as Middleware;
+      try {
+        const result = middleware(req, res, next);
+        if (result instanceof Promise) {
+          result.catch((err: Error) => {
+            this.errorHandler(err, ctx);
+          });
+        }
+      } catch (err) {
+        this.errorHandler(err as Error, ctx);
+      }
+    };
+
+    next();
   }
 }

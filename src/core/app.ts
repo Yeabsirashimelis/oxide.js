@@ -1,5 +1,9 @@
 import { Router, RouteGroup } from "../router/router";
-import type { Handler } from "../router/router";
+import type { Handler, RouteMiddleware } from "../router/router";
+import { Context } from "./context";
+
+export { Context };
+export type { Handler, RouteMiddleware };
 import type { Middleware } from "../middleware/types";
 import type { ErrorHandler } from "../middleware/error-handler";
 import { runMiddlewares } from "../middleware/runner";
@@ -17,36 +21,36 @@ export class Application {
     this.middlewares.push(middleware);
   }
 
-  get(path: string, handler: Handler) {
-    this.router.add("GET", path, handler);
+  get(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("GET", path, ...handlers);
   }
 
-  post(path: string, handler: Handler) {
-    this.router.add("POST", path, handler);
+  post(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("POST", path, ...handlers);
   }
 
-  put(path: string, handler: Handler) {
-    this.router.add("PUT", path, handler);
+  put(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("PUT", path, ...handlers);
   }
 
-  patch(path: string, handler: Handler) {
-    this.router.add("PATCH", path, handler);
+  patch(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("PATCH", path, ...handlers);
   }
 
-  delete(path: string, handler: Handler) {
-    this.router.add("DELETE", path, handler);
+  delete(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("DELETE", path, ...handlers);
   }
 
-  options(path: string, handler: Handler) {
-    this.router.add("OPTIONS", path, handler);
+  options(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("OPTIONS", path, ...handlers);
   }
 
-  head(path: string, handler: Handler) {
-    this.router.add("HEAD", path, handler);
+  head(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("HEAD", path, ...handlers);
   }
 
-  all(path: string, handler: Handler) {
-    this.router.add("*", path, handler);
+  all(path: string, ...handlers: RouteMiddleware[]) {
+    this.router.add("*", path, ...handlers);
   }
 
   group(prefix: string): RouteGroup {
