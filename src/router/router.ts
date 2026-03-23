@@ -44,12 +44,63 @@ function matchRoute(pattern: string, url: string): Params | null {
   return params;
 }
 
+export class RouteGroup {
+  private router: Router;
+  private prefix: string;
+
+  constructor(router: Router, prefix: string) {
+    this.router = router;
+    this.prefix = prefix.endsWith("/") ? prefix.slice(0, -1) : prefix;
+  }
+
+  private fullPath(path: string): string {
+    if (path === "/") {
+      return this.prefix || "/";
+    }
+    return `${this.prefix}${path}`;
+  }
+
+  get(path: string, handler: Handler) {
+    this.router.add("GET", this.fullPath(path), handler);
+    return this;
+  }
+
+  post(path: string, handler: Handler) {
+    this.router.add("POST", this.fullPath(path), handler);
+    return this;
+  }
+
+  put(path: string, handler: Handler) {
+    this.router.add("PUT", this.fullPath(path), handler);
+    return this;
+  }
+
+  patch(path: string, handler: Handler) {
+    this.router.add("PATCH", this.fullPath(path), handler);
+    return this;
+  }
+
+  delete(path: string, handler: Handler) {
+    this.router.add("DELETE", this.fullPath(path), handler);
+    return this;
+  }
+
+  all(path: string, handler: Handler) {
+    this.router.add("*", this.fullPath(path), handler);
+    return this;
+  }
+}
+
 export class Router {
   private routes: Route[] = [];
   private errorHandler: ErrorHandler = defaultErrorHandler;
 
   add(method: string, path: string, handler: Handler) {
     this.routes.push({ method, path, handler });
+  }
+
+  group(prefix: string): RouteGroup {
+    return new RouteGroup(this, prefix);
   }
 
   setErrorHandler(handler: ErrorHandler) {

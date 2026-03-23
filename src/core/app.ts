@@ -1,4 +1,4 @@
-import { Router } from "../router/router";
+import { Router, RouteGroup } from "../router/router";
 import type { Handler } from "../router/router";
 import type { Middleware } from "../middleware/types";
 import type { ErrorHandler } from "../middleware/error-handler";
@@ -47,6 +47,10 @@ export class Application {
 
   all(path: string, handler: Handler) {
     this.router.add("*", path, handler);
+  }
+
+  group(prefix: string): RouteGroup {
+    return this.router.group(prefix);
   }
 
   onError(handler: ErrorHandler) {

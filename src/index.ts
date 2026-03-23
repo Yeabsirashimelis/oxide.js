@@ -177,6 +177,36 @@ app.get("/api/cookie/clear", (ctx) => {
 });
 
 // ============================================
+// ROUTE GROUPS DEMO
+// ============================================
+
+// Group routes under /api/v1
+const v1 = app.group("/api/v1");
+
+v1.get("/status", (ctx) => {
+  ctx.json({ version: "v1", status: "active" });
+});
+
+v1.get("/users", (ctx) => {
+  ctx.json({ version: "v1", users: ["alice", "bob"] });
+});
+
+v1.post("/users", (ctx) => {
+  ctx.status(201).json({ version: "v1", message: "User created" });
+});
+
+// Group routes under /api/v2
+const v2 = app.group("/api/v2");
+
+v2.get("/status", (ctx) => {
+  ctx.json({ version: "v2", status: "beta" });
+});
+
+v2.get("/users", (ctx) => {
+  ctx.json({ version: "v2", users: ["alice", "bob", "charlie"] });
+});
+
+// ============================================
 // ERROR HANDLING DEMO
 // ============================================
 
