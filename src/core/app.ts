@@ -1,8 +1,8 @@
-import { Router, RouteGroup } from "../router/router";
+import { Router, RouteGroup, createRouter } from "../router/router";
 import type { Handler, RouteMiddleware } from "../router/router";
 import { Context } from "./context";
 
-export { Context };
+export { Context, createRouter };
 export type { Handler, RouteMiddleware };
 import type { Middleware } from "../middleware/types";
 import type { ErrorHandler } from "../middleware/error-handler";
@@ -17,8 +17,16 @@ export class Application {
     this.router = new Router();
   }
 
-  use(middleware: Middleware) {
-    this.middlewares.push(middleware);
+  use(middleware: Middleware): void;
+  use(path: string, router: Router): void;
+  use(pathOrMiddleware: string | Middleware, router?: Router): void {
+    if (typeof pathOrMiddleware === "string" && router) {
+      // Mount a router at a path: app.use('/api', apiRouter)
+      this.router.mount(pathOrMiddleware, router);
+    } else if (typeof pathOrMiddleware === "function") {
+      // Regular middleware: app.use(middleware)
+      this.middlewares.push(pathOrMiddleware);
+    }
   }
 
   get(path: string, ...handlers: RouteMiddleware[]) {

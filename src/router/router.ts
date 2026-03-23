@@ -111,8 +111,72 @@ export class Router {
     this.routes.push({ method, path, middlewares, handler });
   }
 
+  // HTTP method shortcuts for standalone router usage
+  get(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("GET", path, ...handlers);
+    return this;
+  }
+
+  post(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("POST", path, ...handlers);
+    return this;
+  }
+
+  put(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("PUT", path, ...handlers);
+    return this;
+  }
+
+  patch(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("PATCH", path, ...handlers);
+    return this;
+  }
+
+  delete(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("DELETE", path, ...handlers);
+    return this;
+  }
+
+  options(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("OPTIONS", path, ...handlers);
+    return this;
+  }
+
+  head(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("HEAD", path, ...handlers);
+    return this;
+  }
+
+  all(path: string, ...handlers: RouteMiddleware[]) {
+    this.add("*", path, ...handlers);
+    return this;
+  }
+
   group(prefix: string): RouteGroup {
     return new RouteGroup(this, prefix);
+  }
+
+  // Get all routes (used for mounting)
+  getRoutes(): Route[] {
+    return this.routes;
+  }
+
+  // Mount another router's routes with a prefix
+  mount(prefix: string, router: Router) {
+    const normalizedPrefix = prefix.endsWith("/") ? prefix.slice(0, -1) : prefix;
+
+    for (const route of router.getRoutes()) {
+      const fullPath = route.path === "/"
+        ? normalizedPrefix || "/"
+        : `${normalizedPrefix}${route.path}`;
+
+      this.routes.push({
+        method: route.method,
+        path: fullPath,
+        middlewares: route.middlewares,
+        handler: route.handler,
+      });
+    }
   }
 
   setErrorHandler(handler: ErrorHandler) {
@@ -183,4 +247,8 @@ export class Router {
 
     next();
   }
+}
+
+export function createRouter(): Router {
+  return new Router();
 }

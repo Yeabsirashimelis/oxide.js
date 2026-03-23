@@ -1,4 +1,4 @@
-import { createApp, Context } from "./core/app";
+import { createApp, createRouter, Context } from "./core/app";
 import { jsonParser } from "./body/json";
 import { urlencodedParser } from "./body/urlencoded";
 import { cors } from "./middleware/cors";
@@ -327,6 +327,40 @@ app.get("/api/file", (ctx: Context) => {
 app.get("/api/download", (ctx: Context) => {
   ctx.download("public/index.html", "example.html");
 });
+
+// ============================================
+// NESTED ROUTERS DEMO
+// ============================================
+
+// Create a standalone router for users
+const usersRouter = createRouter();
+
+usersRouter.get("/", (ctx: Context) => {
+  ctx.json({ users: ["alice", "bob", "charlie"] });
+});
+
+usersRouter.get("/:id", (ctx: Context) => {
+  ctx.json({ user: { id: ctx.params.id, name: "User " + ctx.params.id } });
+});
+
+usersRouter.post("/", (ctx: Context) => {
+  ctx.status(201).json({ message: "User created", data: ctx.body });
+});
+
+// Create a standalone router for posts
+const postsRouter = createRouter();
+
+postsRouter.get("/", (ctx: Context) => {
+  ctx.json({ posts: [{ id: 1, title: "Hello World" }] });
+});
+
+postsRouter.get("/:id", (ctx: Context) => {
+  ctx.json({ post: { id: ctx.params.id, title: "Post " + ctx.params.id } });
+});
+
+// Mount routers at specific paths
+app.use("/api/v3/users", usersRouter);
+app.use("/api/v3/posts", postsRouter);
 
 // ============================================
 // ERROR HANDLING DEMO
