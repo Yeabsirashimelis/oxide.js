@@ -139,6 +139,30 @@ app.all("/api/any", (req, res, params) => {
   res.json({ method: req.method, message: "This route accepts any HTTP method" });
 });
 
+// ============================================
+// ERROR HANDLING DEMO
+// ============================================
+
+// Sync error - throws immediately
+app.get("/api/crash", (req, res, params) => {
+  throw new Error("Something went wrong!");
+});
+
+// Async error - throws in promise
+app.get("/api/async-crash", async (req, res, params) => {
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  throw new Error("Async error occurred!");
+});
+
+// Custom error handler (optional - uncomment to use)
+// app.onError((err, req, res) => {
+//   res.status(500).json({
+//     error: err.message,
+//     path: req.url,
+//     timestamp: new Date().toISOString(),
+//   });
+// });
+
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");
 });

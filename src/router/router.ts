@@ -3,6 +3,10 @@ import { enhanceResponse } from "../response/response";
 import type { OxideResponse } from "../response/response";
 import { enhanceRequest } from "../request/request";
 import type { OxideRequest } from "../request/request";
+import {
+  defaultErrorHandler,
+  type ErrorHandler,
+} from "../middleware/error-handler";
 
 export type Params = Record<string, string>;
 
@@ -10,7 +14,7 @@ export type Handler = (
   req: OxideRequest,
   res: OxideResponse,
   params: Params,
-) => void;
+) => void | Promise<void>;
 
 interface Route {
   method: string;
@@ -47,9 +51,14 @@ function matchRoute(pattern: string, url: string): Params | null {
 
 export class Router {
   private routes: Route[] = [];
+  private errorHandler: ErrorHandler = defaultErrorHandler;
 
   add(method: string, path: string, handler: Handler) {
     this.routes.push({ method, path, handler });
+  }
+
+  setErrorHandler(handler: ErrorHandler) {
+    this.errorHandler = handler;
   }
 
   handle(req: IncomingMessage, res: ServerResponse) {
@@ -64,7 +73,16 @@ export class Router {
 
       const params = matchRoute(route.path, url);
       if (params !== null) {
-        route.handler(oxideReq, oxideRes, params);
+        try {
+          const result = route.handler(oxideReq, oxideRes, params);
+          if (result instanceof Promise) {
+            result.catch((err: Error) => {
+              this.errorHandler(err, oxideReq, oxideRes);
+            });
+          }
+        } catch (err) {
+          this.errorHandler(err as Error, oxideReq, oxideRes);
+        }
         return;
       }
     }
