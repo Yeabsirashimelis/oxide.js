@@ -195,7 +195,7 @@ app.get("/api/cookie/clear", (ctx: Context) => {
 // ROUTE-LEVEL MIDDLEWARE DEMO
 // ============================================
 
-// Auth middleware (example)
+// Auth middleware    (example)
 const authMiddleware = (req: any, res: any, next: () => void) => {
   const authHeader = req.headers["authorization"];
   if (authHeader === "Bearer secret-token") {
