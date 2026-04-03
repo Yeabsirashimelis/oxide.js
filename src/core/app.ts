@@ -5,7 +5,7 @@ import { Context } from "./context";
 export { Context, createRouter };
 export type { Handler, RouteMiddleware };
 import type { Middleware } from "../middleware/types";
-import type { ErrorHandler } from "../middleware/error-handler";
+import type { ErrorHandler, NotFoundHandler } from "../middleware/error-handler";
 import { runMiddlewares } from "../middleware/runner";
 import { Server } from "./server";
 
@@ -21,10 +21,8 @@ export class Application {
   use(path: string, router: Router): void;
   use(pathOrMiddleware: string | Middleware, router?: Router): void {
     if (typeof pathOrMiddleware === "string" && router) {
-      // Mount a router at a path: app.use('/api', apiRouter)
       this.router.mount(pathOrMiddleware, router);
     } else if (typeof pathOrMiddleware === "function") {
-      // Regular middleware: app.use(middleware)
       this.middlewares.push(pathOrMiddleware);
     }
   }
@@ -69,11 +67,23 @@ export class Application {
     this.router.setErrorHandler(handler);
   }
 
+  notFound(handler: NotFoundHandler) {
+    this.router.setNotFoundHandler(handler);
+  }
+
   listen(port: number, callback?: () => void) {
     const server = new Server((req, res) => {
-      runMiddlewares(this.middlewares, req, res, () => {
-        this.router.handle(req, res);
-      });
+      runMiddlewares(
+        this.middlewares,
+        req,
+        res,
+        () => {
+          this.router.handle(req, res);
+        },
+        (err) => {
+          this.router.handleError(err, req, res);
+        },
+      );
     });
 
     server.listen(port, callback);

@@ -8,6 +8,7 @@ import type {
   OxideRequestWithCookies,
   OxideResponseWithCookies,
 } from "../middleware/cookie";
+import { HttpError } from "../middleware/error-handler";
 
 export class Context {
   readonly req: OxideRequest;
@@ -168,5 +169,9 @@ export class Context {
     if (res.clearCookie) {
       res.clearCookie(name, options);
     }
+  }
+
+  throw(status: number, message?: string): never {
+    throw new HttpError(status, message);
   }
 }

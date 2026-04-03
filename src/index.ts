@@ -4,6 +4,7 @@ import { urlencodedParser } from "./body/urlencoded";
 import { cors } from "./middleware/cors";
 import { serveStatic } from "./middleware/static";
 import { cookieParser } from "./middleware/cookie";
+import { HttpError } from "./middleware/error-handler";
 
 const app = createApp();
 
@@ -385,25 +386,58 @@ app.use("/api/v3/posts", postsRouter);
 // ERROR HANDLING DEMO
 // ============================================
 
-// Sync error - throws immediately
+// ctx.throw() - throw HTTP errors with proper status codes
+app.get("/api/protected", (ctx: Context) => {
+  ctx.throw(401, "Authentication required");
+});
+
+// ctx.throw() - 404 with custom message
+app.get("/api/missing-item", (ctx: Context) => {
+  ctx.throw(404, "Item not found");
+});
+
+// ctx.throw() - 403 forbidden
+app.get("/api/forbidden", (ctx: Context) => {
+  ctx.throw(403);
+});
+
+// Sync error - caught by error handler
 app.get("/api/crash", (ctx: Context) => {
   throw new Error("Something went wrong!");
 });
 
-// Async error - throws in promise
+// Async error - caught by error handler
 app.get("/api/async-crash", async (ctx: Context) => {
   await new Promise((resolve) => setTimeout(resolve, 100));
   throw new Error("Async error occurred!");
 });
 
-// Custom error handler (optional - uncomment to use)
-// app.onError((err, ctx) => {
-//   ctx.status(500).json({
-//     error: err.message,
-//     path: ctx.url,
-//     timestamp: new Date().toISOString(),
-//   });
-// });
+// Custom error handler
+app.onError((err, ctx) => {
+  const status = err instanceof HttpError ? err.status : 500;
+  const message = err instanceof HttpError && err.expose
+    ? err.message
+    : "Internal Server Error";
+
+  if (status >= 500) {
+    console.error(`[Error] ${err.message}`);
+  }
+
+  ctx.status(status).json({
+    error: message,
+    path: ctx.url,
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Custom 404 handler
+app.notFound((ctx) => {
+  ctx.status(404).json({
+    error: "Route not found",
+    path: ctx.url,
+    suggestion: "Check the API documentation",
+  });
+});
 
 app.listen(3000, () => {
   console.log("Server running on http://localhost:3000");

@@ -4,7 +4,9 @@ import { enhanceRequest } from "../request/request";
 import { Context } from "../core/context";
 import {
   defaultErrorHandler,
+  defaultNotFoundHandler,
   type ErrorHandler,
+  type NotFoundHandler,
 } from "../middleware/error-handler";
 import type { Middleware } from "../middleware/types";
 
@@ -98,6 +100,7 @@ export class RouteGroup {
 export class Router {
   private routes: Route[] = [];
   private errorHandler: ErrorHandler = defaultErrorHandler;
+  private notFoundHandler: NotFoundHandler = defaultNotFoundHandler;
 
   add(method: string, path: string, ...handlers: RouteMiddleware[]) {
     if (handlers.length === 0) {
@@ -183,6 +186,18 @@ export class Router {
     this.errorHandler = handler;
   }
 
+  setNotFoundHandler(handler: NotFoundHandler) {
+    this.notFoundHandler = handler;
+  }
+
+  // Handle errors from global middleware (before routing)
+  handleError(err: Error, req: IncomingMessage, res: ServerResponse) {
+    const oxideReq = enhanceRequest(req);
+    const oxideRes = enhanceResponse(res);
+    const ctx = new Context(oxideReq, oxideRes, {});
+    this.errorHandler(err, ctx);
+  }
+
   handle(req: IncomingMessage, res: ServerResponse) {
     const url = req.url || "/";
     const oxideReq = enhanceRequest(req);
@@ -214,7 +229,9 @@ export class Router {
       }
     }
 
-    oxideRes.status(404).send("Not Found");
+    // No route matched — call not found handler
+    const ctx = new Context(oxideReq, oxideRes, {});
+    this.notFoundHandler(ctx);
   }
 
   private runRouteMiddlewares(
