@@ -9,6 +9,7 @@ import {
   type NotFoundHandler,
 } from "../middleware/error-handler";
 import type { Middleware } from "../middleware/types";
+import type { Application } from "../core/app";
 
 export type Params = Record<string, string>;
 
@@ -101,6 +102,11 @@ export class Router {
   private routes: Route[] = [];
   private errorHandler: ErrorHandler = defaultErrorHandler;
   private notFoundHandler: NotFoundHandler = defaultNotFoundHandler;
+  private app?: Application;
+
+  setApp(app: Application) {
+    this.app = app;
+  }
 
   add(method: string, path: string, ...handlers: RouteMiddleware[]) {
     if (handlers.length === 0) {
@@ -194,7 +200,7 @@ export class Router {
   handleError(err: Error, req: IncomingMessage, res: ServerResponse) {
     const oxideReq = enhanceRequest(req);
     const oxideRes = enhanceResponse(res);
-    const ctx = new Context(oxideReq, oxideRes, {});
+    const ctx = new Context(oxideReq, oxideRes, {}, this.app);
     this.errorHandler(err, ctx);
   }
 
@@ -210,7 +216,7 @@ export class Router {
 
       const params = matchRoute(route.path, url);
       if (params !== null) {
-        const ctx = new Context(oxideReq, oxideRes, params);
+        const ctx = new Context(oxideReq, oxideRes, params, this.app);
 
         // Run route-level middleware then handler
         this.runRouteMiddlewares(route.middlewares, req, res, ctx, () => {
@@ -230,7 +236,7 @@ export class Router {
     }
 
     // No route matched — call not found handler
-    const ctx = new Context(oxideReq, oxideRes, {});
+    const ctx = new Context(oxideReq, oxideRes, {}, this.app);
     this.notFoundHandler(ctx);
   }
 

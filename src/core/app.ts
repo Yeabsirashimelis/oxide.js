@@ -9,12 +9,73 @@ import type { ErrorHandler, NotFoundHandler } from "../middleware/error-handler"
 import { runMiddlewares } from "../middleware/runner";
 import { Server } from "./server";
 
+export type TemplateEngine = (
+  filePath: string,
+  data: Record<string, unknown>,
+  callback: (err: Error | null, html?: string) => void,
+) => void;
+
+export interface AppSettings {
+  views: string;
+  "view engine": string;
+  [key: string]: unknown;
+}
+
 export class Application {
   private router: Router;
   private middlewares: Middleware[] = [];
+  private settings: AppSettings = {
+    views: "views",
+    "view engine": "",
+  };
+  private engines: Record<string, TemplateEngine> = {};
 
   constructor() {
     this.router = new Router();
+  }
+
+  set(key: string, value: unknown) {
+    (this.settings as Record<string, unknown>)[key] = value;
+
+    // Auto-register known engines when view engine is set
+    if (key === "view engine" && typeof value === "string") {
+      const ext = `.${value}`;
+      if (!this.engines[ext]) {
+        try {
+          // Try to require the engine module (works for ejs, pug, handlebars, etc.)
+          const engineModule = require(value);
+          if (typeof engineModule.renderFile === "function") {
+            this.engines[ext] = engineModule.renderFile;
+          } else if (typeof engineModule.__express === "function") {
+            this.engines[ext] = engineModule.__express;
+          }
+        } catch {
+          // Engine not installed — user must register manually via app.engine()
+        }
+      }
+    }
+  }
+
+  getSetting(key: string): unknown {
+    return (this.settings as Record<string, unknown>)[key];
+  }
+
+  engine(ext: string, fn: TemplateEngine) {
+    const extension = ext.startsWith(".") ? ext : `.${ext}`;
+    this.engines[extension] = fn;
+  }
+
+  getEngine(ext: string): TemplateEngine | undefined {
+    const extension = ext.startsWith(".") ? ext : `.${ext}`;
+    return this.engines[extension];
+  }
+
+  getSettings(): AppSettings {
+    return this.settings;
+  }
+
+  getEngines(): Record<string, TemplateEngine> {
+    return this.engines;
   }
 
   use(middleware: Middleware): void;
@@ -72,6 +133,9 @@ export class Application {
   }
 
   listen(port: number, callback?: () => void) {
+    // Pass app reference to router for template rendering
+    this.router.setApp(this);
+
     const server = new Server((req, res) => {
       runMiddlewares(
         this.middlewares,

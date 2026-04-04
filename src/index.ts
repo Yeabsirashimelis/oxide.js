@@ -5,8 +5,16 @@ import { cors } from "./middleware/cors";
 import { serveStatic } from "./middleware/static";
 import { cookieParser } from "./middleware/cookie";
 import { HttpError } from "./middleware/error-handler";
+import { compression } from "./middleware/compression";
 
 const app = createApp();
+
+// ============================================
+// TEMPLATE ENGINE SETUP
+// ============================================
+
+app.set("view engine", "ejs");
+app.set("views", "views");
 
 // ============================================
 // MIDDLEWARE DEMO
@@ -24,6 +32,9 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
+
+// Compression middleware - gzip/deflate responses
+app.use(compression({ threshold: 256 }));
 
 // JSON body parser middleware
 app.use(jsonParser());
@@ -383,6 +394,30 @@ app.use("/api/v3/users", usersRouter);
 app.use("/api/v3/posts", postsRouter);
 
 // ============================================
+// TEMPLATE ENGINE DEMO
+// ============================================
+
+// ctx.render() - render a view with data
+app.get("/page/home", (ctx: Context) => {
+  ctx.render("home", {
+    title: "Oxide.js",
+    framework: "Oxide.js",
+    items: ["Fast routing", "Middleware support", "Template engine", "Error handling"],
+  });
+});
+
+// Render with dynamic data from route params
+app.get("/page/user/:name", (ctx: Context) => {
+  ctx.render("user", {
+    user: {
+      name: ctx.params.name,
+      email: `${ctx.params.name}@example.com`,
+      role: "Developer",
+    },
+  });
+});
+
+// ============================================
 // ERROR HANDLING DEMO
 // ============================================
 
@@ -439,6 +474,6 @@ app.notFound((ctx) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+app.listen(3002, () => {
+  console.log("Server running on http://localhost:3002");
 });

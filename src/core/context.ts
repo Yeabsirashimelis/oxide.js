@@ -1,3 +1,4 @@
+import * as path from "path";
 import type { IncomingMessage } from "http";
 import type { OxideRequest, Query } from "../request/request";
 import type { OxideResponse, SendFileOptions } from "../response/response";
@@ -9,16 +10,19 @@ import type {
   OxideResponseWithCookies,
 } from "../middleware/cookie";
 import { HttpError } from "../middleware/error-handler";
+import type { Application } from "./app";
 
 export class Context {
   readonly req: OxideRequest;
   readonly res: OxideResponse;
   readonly params: Params;
+  private app?: Application;
 
-  constructor(req: OxideRequest, res: OxideResponse, params: Params) {
+  constructor(req: OxideRequest, res: OxideResponse, params: Params, app?: Application) {
     this.req = req;
     this.res = res;
     this.params = params;
+    this.app = app;
   }
 
   // Request helpers
@@ -169,6 +173,35 @@ export class Context {
     if (res.clearCookie) {
       res.clearCookie(name, options);
     }
+  }
+
+  render(view: string, data: Record<string, unknown> = {}): void {
+    if (!this.app) {
+      throw new Error("Cannot render: no app context available");
+    }
+
+    const viewEngine = this.app.getSetting("view engine") as string;
+    const viewsDir = this.app.getSetting("views") as string || "views";
+
+    if (!viewEngine) {
+      throw new Error("No view engine set. Use app.set('view engine', 'ejs')");
+    }
+
+    const ext = `.${viewEngine}`;
+    const engine = this.app.getEngine(ext);
+
+    if (!engine) {
+      throw new Error(`No engine registered for extension "${ext}". Use app.engine('${viewEngine}', engineFn)`);
+    }
+
+    const filePath = path.resolve(viewsDir, `${view}${ext}`);
+
+    engine(filePath, data, (err, html) => {
+      if (err) {
+        throw err;
+      }
+      this.html(html as string);
+    });
   }
 
   throw(status: number, message?: string): never {
