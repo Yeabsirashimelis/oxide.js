@@ -54,6 +54,8 @@ export interface OxideResponse extends ServerResponse {
   set(name: string, value: string | number): OxideResponse;
   append(name: string, value: string | number): OxideResponse;
   type(contentType: string): OxideResponse;
+  attachment(filename?: string): OxideResponse;
+  links(links: Record<string, string>): OxideResponse;
 }
 
 export function enhanceResponse(res: ServerResponse): OxideResponse {
@@ -152,6 +154,32 @@ export function enhanceResponse(res: ServerResponse): OxideResponse {
   oxideRes.type = function (contentType: string): OxideResponse {
     const resolved = CONTENT_TYPE_MAP[contentType] || contentType;
     this.setHeader("Content-Type", resolved);
+    return this;
+  };
+
+  oxideRes.attachment = function (filename?: string): OxideResponse {
+    if (filename) {
+      const ext = path.extname(filename).toLowerCase();
+      const contentType = MIME_TYPES[ext] || "application/octet-stream";
+      this.setHeader("Content-Type", contentType);
+      this.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    } else {
+      this.setHeader("Content-Disposition", "attachment");
+    }
+    return this;
+  };
+
+  oxideRes.links = function (links: Record<string, string>): OxideResponse {
+    const parts = Object.entries(links).map(
+      ([rel, url]) => `<${url}>; rel="${rel}"`
+    );
+    const existing = this.getHeader("Link");
+    if (existing) {
+      const prev = Array.isArray(existing) ? existing.join(", ") : String(existing);
+      this.setHeader("Link", `${prev}, ${parts.join(", ")}`);
+    } else {
+      this.setHeader("Link", parts.join(", "));
+    }
     return this;
   };
 

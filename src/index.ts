@@ -439,6 +439,31 @@ app.get("/api/limited", apiLimiter as any, (ctx: Context) => {
 });
 
 // ============================================
+// ATTACHMENT & LINKS DEMO
+// ============================================
+
+// ctx.attachment() - set Content-Disposition for download
+app.get("/api/report", (ctx: Context) => {
+  ctx.attachment("report.json");
+  ctx.json({ revenue: 50000, users: 1200, month: "March 2026" });
+});
+
+// ctx.links() - set Link header for pagination
+app.get("/api/articles", (ctx: Context) => {
+  const page = parseInt(ctx.query.page || "1");
+  ctx.links({
+    first: "/api/articles?page=1",
+    prev: page > 1 ? `/api/articles?page=${page - 1}` : "",
+    next: `/api/articles?page=${page + 1}`,
+    last: "/api/articles?page=10",
+  });
+  ctx.json({
+    page,
+    articles: [{ id: page, title: `Article ${page}` }],
+  });
+});
+
+// ============================================
 // SESSION DEMO
 // ============================================
 
