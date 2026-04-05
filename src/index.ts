@@ -571,8 +571,86 @@ app.notFound((ctx) => {
   });
 });
 
+// ============================================
+// WEBSOCKET DEMO
+// ============================================
+
+// Basic echo WebSocket
+app.ws("/ws/echo", (socket) => {
+  socket.send({ type: "connected", message: "Echo server ready" });
+
+  socket.on("message", (data) => {
+    socket.send({ type: "echo", data });
+  });
+
+  socket.on("close", () => {
+    console.log(`[WS] Echo client ${socket.id} disconnected`);
+  });
+});
+
+// Chat room WebSocket
+app.ws("/ws/chat", (socket) => {
+  let currentRoom = "general";
+  socket.join(currentRoom);
+
+  socket.send({ type: "system", message: `Welcome! Your ID: ${socket.id}` });
+  socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} joined` });
+
+  socket.on("message", (data) => {
+    try {
+      const msg = JSON.parse(data);
+
+      if (msg.type === "chat") {
+        // Broadcast message to everyone in the current room
+        socket.to(currentRoom).send({
+          type: "chat",
+          from: socket.id,
+          message: msg.message,
+        });
+        // Echo back to sender as confirmation
+        socket.send({
+          type: "chat",
+          from: "you",
+          message: msg.message,
+        });
+      } else if (msg.type === "join") {
+        socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} left` });
+        socket.leave(currentRoom);
+        currentRoom = msg.room;
+        socket.join(currentRoom);
+        socket.send({ type: "system", message: `Joined room: ${currentRoom}` });
+        socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} joined` });
+      }
+    } catch {
+      socket.send({ type: "error", message: "Invalid JSON" });
+    }
+  });
+
+  socket.on("close", () => {
+    socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} left` });
+  });
+});
+
+// Broadcast WebSocket - live notifications
+app.ws("/ws/notifications", (socket) => {
+  socket.send({ type: "connected", message: "Notification stream ready" });
+
+  socket.on("message", (data) => {
+    // Broadcast notification to all other clients
+    socket.broadcast({ type: "notification", from: socket.id, data });
+  });
+
+  socket.on("close", () => {
+    console.log(`[WS] Notification client ${socket.id} disconnected`);
+  });
+});
+
 app.listen(3002, () => {
   console.log("Server running on http://localhost:3002");
+  console.log("WebSocket endpoints:");
+  console.log("  ws://localhost:3002/ws/echo");
+  console.log("  ws://localhost:3002/ws/chat");
+  console.log("  ws://localhost:3002/ws/notifications");
 });
 
 // ============================================

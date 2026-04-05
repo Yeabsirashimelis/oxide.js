@@ -8,6 +8,7 @@ import type { Middleware } from "../middleware/types";
 import type { ErrorHandler, NotFoundHandler } from "../middleware/error-handler";
 import { runMiddlewares } from "../middleware/runner";
 import { Server, type SSLOptions } from "./server";
+import { OxideWebSocketServer, type WsHandler } from "../ws/websocket";
 
 export type TemplateEngine = (
   filePath: string,
@@ -29,6 +30,7 @@ export class Application {
     "view engine": "",
   };
   private engines: Record<string, TemplateEngine> = {};
+  private wsServer: OxideWebSocketServer = new OxideWebSocketServer();
 
   constructor() {
     this.router = new Router();
@@ -132,6 +134,16 @@ export class Application {
     this.router.setNotFoundHandler(handler);
   }
 
+  /** Register a WebSocket route */
+  ws(path: string, handler: WsHandler): void {
+    this.wsServer.addRoute(path, handler);
+  }
+
+  /** Get the WebSocket server instance for advanced usage */
+  getWsServer(): OxideWebSocketServer {
+    return this.wsServer;
+  }
+
   listen(port: number, callback?: () => void): void;
   listen(port: number, ssl: SSLOptions, callback?: () => void): void;
   listen(port: number, sslOrCallback?: SSLOptions | (() => void), callback?: () => void): void {
@@ -152,11 +164,15 @@ export class Application {
       );
     });
 
+    let httpServer;
     if (typeof sslOrCallback === "object" && sslOrCallback !== null) {
-      server.listen(port, sslOrCallback, callback);
+      httpServer = server.listen(port, sslOrCallback, callback);
     } else {
-      server.listen(port, sslOrCallback as (() => void) | undefined);
+      httpServer = server.listen(port, sslOrCallback as (() => void) | undefined);
     }
+
+    // Attach WebSocket server to the HTTP server
+    this.wsServer.attach(httpServer);
   }
 }
 
