@@ -185,6 +185,16 @@ export class Context {
     }
   }
 
+  attachment(filename?: string): this {
+    this.res.attachment(filename);
+    return this;
+  }
+
+  links(links: Record<string, string>): this {
+    this.res.links(links);
+    return this;
+  }
+
   render(view: string, data: Record<string, unknown> = {}): void {
     if (!this.app) {
       throw new Error("Cannot render: no app context available");
