@@ -2,22 +2,49 @@
   "name": "oxide.js",
   "version": "0.1.0",
   "description": "A modern TypeScript-first backend framework",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/lib.js",
+  "module": "dist/lib.mjs",
+  "types": "dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/lib.d.mts",
+        "default": "./dist/lib.mjs"
+      },
+      "require": {
+        "types": "./dist/lib.d.ts",
+        "default": "./dist/lib.js"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "demo": "npx tsx src/index.ts",
     "clean": "rm -rf dist",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
     "http",
     "framework",
     "node",
-    "typescript"
+    "typescript",
+    "backend",
+    "server",
+    "websocket",
+    "middleware",
+    "rest",
+    "api"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "@types/node": "^25.3.3",
     "@types/ws": "^8.18.1",
