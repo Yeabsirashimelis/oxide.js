@@ -18,10 +18,12 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^25.3.3",
+    "@types/ws": "^8.18.1",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "ejs": "^5.0.1"
+    "ejs": "^5.0.1",
+    "ws": "^8.20.0"
   }
 }
