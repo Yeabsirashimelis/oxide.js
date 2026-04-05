@@ -17,7 +17,7 @@ export class Context {
   readonly req: OxideRequest;
   readonly res: OxideResponse;
   readonly params: Params;
-  private app?: Application;
+  private app: Application | undefined;
 
   constructor(req: OxideRequest, res: OxideResponse, params: Params, app?: Application) {
     this.req = req;
