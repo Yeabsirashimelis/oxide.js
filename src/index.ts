@@ -9,6 +9,7 @@ import { compression } from "./middleware/compression";
 import { rateLimit } from "./middleware/rate-limit";
 import { validate } from "./middleware/validate";
 import { session } from "./middleware/session";
+import { logger } from "./middleware/logger";
 
 const app = createApp();
 
@@ -23,11 +24,8 @@ app.set("views", "views");
 // MIDDLEWARE DEMO
 // ============================================
 
-// Logger middleware - runs on every request
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  next();
-});
+// Logger middleware - structured request logging with colors
+app.use(logger({ format: "dev" }));
 
 // CORS middleware - enable cross-origin requests
 app.use(cors({
