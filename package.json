@@ -7,7 +7,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [
     "http",
@@ -20,7 +22,8 @@
     "@types/node": "^25.3.3",
     "@types/ws": "^8.18.1",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
   },
   "dependencies": {
     "ejs": "^5.0.1",

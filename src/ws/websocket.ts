@@ -24,7 +24,8 @@ export class OxideSocket {
 
   /** Send data to this client */
   send(data: string | object): void {
-    if (this.raw.readyState === WebSocket.OPEN) {
+    // readyState 1 = OPEN
+    if (this.raw.readyState === 1) {
       const payload = typeof data === "object" ? JSON.stringify(data) : data;
       this.raw.send(payload);
     }
@@ -135,7 +136,7 @@ export class OxideWebSocketServer {
   broadcast(data: string | object, exclude?: OxideSocket): void {
     const payload = typeof data === "object" ? JSON.stringify(data) : data;
     for (const client of this.clients) {
-      if (client !== exclude && client.raw.readyState === WebSocket.OPEN) {
+      if (client !== exclude && client.raw.readyState === 1) {
         client.raw.send(payload);
       }
     }
@@ -175,7 +176,7 @@ export class OxideWebSocketServer {
 
     const payload = typeof data === "object" ? JSON.stringify(data) : data;
     for (const client of roomClients) {
-      if (client !== exclude && client.raw.readyState === WebSocket.OPEN) {
+      if (client !== exclude && client.raw.readyState === 1) {
         client.raw.send(payload);
       }
     }
