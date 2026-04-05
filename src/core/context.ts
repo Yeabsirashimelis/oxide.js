@@ -11,6 +11,7 @@ import type {
 } from "../middleware/cookie";
 import { HttpError } from "../middleware/error-handler";
 import type { Application } from "./app";
+import type { SessionData, OxideRequestWithSession } from "../middleware/session";
 
 export class Context {
   readonly req: OxideRequest;
@@ -154,6 +155,15 @@ export class Context {
     }
 
     return contentType.includes(normalizedType);
+  }
+
+  // Session helpers
+  get session(): SessionData {
+    return (this.req as unknown as OxideRequestWithSession).session || {};
+  }
+
+  set session(data: SessionData) {
+    (this.req as unknown as OxideRequestWithSession).session = data;
   }
 
   // Cookie helpers

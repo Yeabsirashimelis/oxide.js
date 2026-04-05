@@ -8,6 +8,7 @@ import { HttpError } from "./middleware/error-handler";
 import { compression } from "./middleware/compression";
 import { rateLimit } from "./middleware/rate-limit";
 import { validate } from "./middleware/validate";
+import { session } from "./middleware/session";
 
 const app = createApp();
 
@@ -46,6 +47,9 @@ app.use(urlencodedParser());
 
 // Cookie parser middleware
 app.use(cookieParser());
+
+// Session middleware
+app.use(session({ maxAge: 3600 }));
 
 // Static file serving - serve files from "public" directory
 // Visit http://localhost:3000/index.html or http://localhost:3000/style.css
@@ -432,6 +436,33 @@ const apiLimiter = rateLimit({
 
 app.get("/api/limited", apiLimiter as any, (ctx: Context) => {
   ctx.json({ message: "This route is rate-limited (5 req / 30s)" });
+});
+
+// ============================================
+// SESSION DEMO
+// ============================================
+
+// Set session data
+app.get("/api/session/login", (ctx: Context) => {
+  ctx.session.user = "Yeabsira";
+  ctx.session.role = "admin";
+  ctx.session.loggedInAt = new Date().toISOString();
+  ctx.json({ message: "Logged in", session: ctx.session });
+});
+
+// Read session data
+app.get("/api/session/profile", (ctx: Context) => {
+  if (!ctx.session.user) {
+    ctx.status(401).json({ error: "Not logged in" });
+    return;
+  }
+  ctx.json({ session: ctx.session });
+});
+
+// Clear session
+app.get("/api/session/logout", (ctx: Context) => {
+  ctx.session = {};
+  ctx.json({ message: "Logged out" });
 });
 
 // ============================================
