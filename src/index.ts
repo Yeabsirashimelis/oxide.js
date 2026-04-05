@@ -7,6 +7,7 @@ import { cookieParser } from "./middleware/cookie";
 import { HttpError } from "./middleware/error-handler";
 import { compression } from "./middleware/compression";
 import { rateLimit } from "./middleware/rate-limit";
+import { validate } from "./middleware/validate";
 
 const app = createApp();
 
@@ -431,6 +432,32 @@ const apiLimiter = rateLimit({
 
 app.get("/api/limited", apiLimiter as any, (ctx: Context) => {
   ctx.json({ message: "This route is rate-limited (5 req / 30s)" });
+});
+
+// ============================================
+// REQUEST VALIDATION DEMO
+// ============================================
+
+// Validate POST body
+app.post("/api/register", validate({
+  body: {
+    name: { type: "string", required: true, min: 2, max: 50 },
+    email: { type: "string", required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+    age: { type: "number", min: 18, max: 120 },
+    role: { enum: ["admin", "user", "moderator"] },
+  },
+}) as any, (ctx: Context) => {
+  ctx.status(201).json({ message: "User registered", data: ctx.body });
+});
+
+// Validate query params
+app.get("/api/search-validated", validate({
+  query: {
+    q: { type: "string", required: true, min: 1 },
+    limit: { type: "number", min: 1, max: 100 },
+  },
+}) as any, (ctx: Context) => {
+  ctx.json({ query: ctx.query.q, limit: ctx.query.limit || "10" });
 });
 
 // ============================================
