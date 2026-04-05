@@ -590,18 +590,19 @@ app.ws("/ws/echo", (socket) => {
 
 // Chat room WebSocket
 app.ws("/ws/chat", (socket) => {
-  socket.join("general");
+  let currentRoom = "general";
+  socket.join(currentRoom);
 
   socket.send({ type: "system", message: `Welcome! Your ID: ${socket.id}` });
-  socket.to("general").send({ type: "system", message: `User ${socket.id} joined` });
+  socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} joined` });
 
   socket.on("message", (data) => {
     try {
       const msg = JSON.parse(data);
 
       if (msg.type === "chat") {
-        // Broadcast message to everyone in the room
-        socket.to("general").send({
+        // Broadcast message to everyone in the current room
+        socket.to(currentRoom).send({
           type: "chat",
           from: socket.id,
           message: msg.message,
@@ -613,9 +614,12 @@ app.ws("/ws/chat", (socket) => {
           message: msg.message,
         });
       } else if (msg.type === "join") {
-        socket.leave("general");
-        socket.join(msg.room);
-        socket.send({ type: "system", message: `Joined room: ${msg.room}` });
+        socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} left` });
+        socket.leave(currentRoom);
+        currentRoom = msg.room;
+        socket.join(currentRoom);
+        socket.send({ type: "system", message: `Joined room: ${currentRoom}` });
+        socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} joined` });
       }
     } catch {
       socket.send({ type: "error", message: "Invalid JSON" });
@@ -623,7 +627,7 @@ app.ws("/ws/chat", (socket) => {
   });
 
   socket.on("close", () => {
-    socket.to("general").send({ type: "system", message: `User ${socket.id} left` });
+    socket.to(currentRoom).send({ type: "system", message: `User ${socket.id} left` });
   });
 });
 
