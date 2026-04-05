@@ -6,6 +6,7 @@ import { serveStatic } from "./middleware/static";
 import { cookieParser } from "./middleware/cookie";
 import { HttpError } from "./middleware/error-handler";
 import { compression } from "./middleware/compression";
+import { rateLimit } from "./middleware/rate-limit";
 
 const app = createApp();
 
@@ -415,6 +416,21 @@ app.get("/page/user/:name", (ctx: Context) => {
       role: "Developer",
     },
   });
+});
+
+// ============================================
+// RATE LIMITING DEMO
+// ============================================
+
+// Rate-limited route: 5 requests per 30 seconds
+const apiLimiter = rateLimit({
+  windowMs: 30000,
+  max: 5,
+  message: "API rate limit exceeded. Try again in 30 seconds.",
+});
+
+app.get("/api/limited", apiLimiter as any, (ctx: Context) => {
+  ctx.json({ message: "This route is rate-limited (5 req / 30s)" });
 });
 
 // ============================================
