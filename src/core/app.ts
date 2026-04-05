@@ -7,7 +7,7 @@ export type { Handler, RouteMiddleware };
 import type { Middleware } from "../middleware/types";
 import type { ErrorHandler, NotFoundHandler } from "../middleware/error-handler";
 import { runMiddlewares } from "../middleware/runner";
-import { Server } from "./server";
+import { Server, type SSLOptions } from "./server";
 
 export type TemplateEngine = (
   filePath: string,
@@ -132,7 +132,9 @@ export class Application {
     this.router.setNotFoundHandler(handler);
   }
 
-  listen(port: number, callback?: () => void) {
+  listen(port: number, callback?: () => void): void;
+  listen(port: number, ssl: SSLOptions, callback?: () => void): void;
+  listen(port: number, sslOrCallback?: SSLOptions | (() => void), callback?: () => void): void {
     // Pass app reference to router for template rendering
     this.router.setApp(this);
 
@@ -150,7 +152,11 @@ export class Application {
       );
     });
 
-    server.listen(port, callback);
+    if (typeof sslOrCallback === "object" && sslOrCallback !== null) {
+      server.listen(port, sslOrCallback, callback);
+    } else {
+      server.listen(port, sslOrCallback as (() => void) | undefined);
+    }
   }
 }
 

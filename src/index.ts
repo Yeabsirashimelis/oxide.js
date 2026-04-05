@@ -574,3 +574,18 @@ app.notFound((ctx) => {
 app.listen(3002, () => {
   console.log("Server running on http://localhost:3002");
 });
+
+// ============================================
+// HTTPS EXAMPLE (uncomment to use)
+// ============================================
+// import * as fs from "fs";
+// const sslApp = createApp();
+// sslApp.get("/", (ctx: Context) => {
+//   ctx.json({ secure: true, protocol: ctx.protocol });
+// });
+// sslApp.listen(3443, {
+//   key: fs.readFileSync("test-key.pem"),
+//   cert: fs.readFileSync("test-cert.pem"),
+// }, () => {
+//   console.log("HTTPS server running on https://localhost:3443");
+// });

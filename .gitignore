@@ -1,4 +1,5 @@
 file-structure-starter.js
 .claude
 node_modules/
-dist/
+dist/test-key.pem
+test-cert.pem
