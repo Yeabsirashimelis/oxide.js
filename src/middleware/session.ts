@@ -83,8 +83,8 @@ export function session(options: SessionOptions = {}): Middleware {
         expires: Date.now() + maxAge * 1000,
       });
 
-      // Set session cookie if new
-      if (isNew && resWithCookies.setCookie) {
+      // Set session cookie if new (skip if headers already sent, e.g. streamed responses)
+      if (isNew && resWithCookies.setCookie && !res.headersSent) {
         resWithCookies.setCookie(name, sessionId as string, {
           maxAge,
           httpOnly,
