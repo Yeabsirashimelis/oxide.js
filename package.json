@@ -1,4 +1,5 @@
 {
+  "author": "Yeabsira Shimelis shimelisyeabsira123@gmail.com",
   "name": "oxide.js",
   "version": "0.1.0",
   "description": "A modern TypeScript-first backend framework",
@@ -41,6 +42,14 @@
     "rest",
     "api"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yeabsirashimelis/oxide.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Yeabsirashimelis/oxide.js/issues"
+  },
+  "homepage": "https://github.com/Yeabsirashimelis/oxide.js#readme",
   "license": "MIT",
   "engines": {
     "node": ">=18"
