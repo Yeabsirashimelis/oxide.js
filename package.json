@@ -1,7 +1,7 @@
 {
   "author": "Yeabsira Shimelis shimelisyeabsira123@gmail.com",
   "name": "@yeabsirashimelis/oxide",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A modern TypeScript-first backend framework",
   "main": "dist/lib.js",
   "module": "dist/lib.mjs",
